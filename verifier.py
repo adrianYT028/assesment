@@ -1,8 +1,8 @@
 import re
 from typing import List, Dict, Any
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import ChatPromptTemplate
-from langchain.output_parsers import PydanticOutputParser
+from langchain_core.output_parsers import PydanticOutputParser
 from pydantic import BaseModel, Field
 from tavily import TavilyClient
 import PyPDF2
@@ -42,7 +42,7 @@ def extract_text_from_pdf(pdf_file) -> str:
         raise Exception(f"Failed to extract text from PDF: {str(e)}")
 
 
-def extract_claims(text: str, llm: ChatOpenAI) -> List[ExtractedClaim]:
+def extract_claims(text: str, llm: ChatGoogleGenerativeAI) -> List[ExtractedClaim]:
     parser = PydanticOutputParser(pydantic_object=ClaimsList)
     
     system_message = """You are a critical fact-checking analyst with expertise in identifying verifiable claims.
@@ -82,7 +82,7 @@ Look for claims that could be intentionally misleading, outdated, or factually i
         return fallback_claims
 
 
-def extract_claims_fallback(text: str, llm: ChatOpenAI) -> List[ExtractedClaim]:
+def extract_claims_fallback(text: str, llm: ChatGoogleGenerativeAI) -> List[ExtractedClaim]:
     prompt = ChatPromptTemplate.from_messages([
         ("system", "Extract verifiable claims with numbers, dates, or specific facts. Return each claim on a new line starting with 'CLAIM:'."),
         ("user", "{text}")
@@ -138,7 +138,7 @@ def formulate_search_query(claim: str) -> str:
     return " ".join(query_parts)
 
 
-def verify_claim_against_results(claim: str, search_results: Dict[str, Any], llm: ChatOpenAI) -> Dict[str, str]:
+def verify_claim_against_results(claim: str, search_results: Dict[str, Any], llm: ChatGoogleGenerativeAI) -> Dict[str, str]:
     if "error" in search_results or not search_results.get("results"):
         return {
             "verdict": "Unverifiable",
@@ -201,13 +201,13 @@ Then provide a brief evidence statement explaining your verdict."""),
         }
 
 
-def verify_document(pdf_file, openai_key: str, tavily_key: str) -> List[VerificationResult]:
+def verify_document(pdf_file, google_key: str, tavily_key: str) -> List[VerificationResult]:
     text = extract_text_from_pdf(pdf_file)
     
-    llm = ChatOpenAI(
-        model="gpt-4o",
+    llm = ChatGoogleGenerativeAI(
+        model="gemini-2.0-flash",
         temperature=0,
-        openai_api_key=openai_key
+        google_api_key=google_key
     )
     
     tavily_client = TavilyClient(api_key=tavily_key)

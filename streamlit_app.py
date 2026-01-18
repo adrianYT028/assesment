@@ -36,11 +36,11 @@ def main():
     st.title("Fact-Checking Web App")
     st.markdown("Upload a PDF document to extract and verify claims against live web data.")
     
-    if 'OPENAI_API_KEY' not in st.secrets or 'TAVILY_API_KEY' not in st.secrets:
-        st.error("API keys not configured. Please set OPENAI_API_KEY and TAVILY_API_KEY in Streamlit secrets.")
+    if 'GEMINI_API_KEY' not in st.secrets or 'TAVILY_API_KEY' not in st.secrets:
+        st.error("API keys not configured. Please set GEMINI_API_KEY and TAVILY_API_KEY in Streamlit secrets.")
         st.stop()
     
-    openai_key = st.secrets['OPENAI_API_KEY']
+    gemini_key = st.secrets['GEMINI_API_KEY']
     tavily_key = st.secrets['TAVILY_API_KEY']
     
     uploaded_file = st.file_uploader(
@@ -55,7 +55,7 @@ def main():
         if st.button("Start Verification", type="primary"):
             try:
                 with st.spinner("Processing document and verifying claims..."):
-                    results = verify_document(uploaded_file, openai_key, tavily_key)
+                    results = verify_document(uploaded_file, gemini_key, tavily_key)
                 
                 if not results:
                     st.warning("No verifiable claims were extracted from the document.")
@@ -141,8 +141,7 @@ def main():
         """)
         
         st.markdown("---")
-        st.markdown("**Tech Stack:**")
-        st.markdown("- OpenAI GPT-4o")
+        st.markdown("- Google Gemini 1.5 Flash")
         st.markdown("- Tavily Search API")
         st.markdown("- LangChain")
         st.markdown("- Streamlit")
